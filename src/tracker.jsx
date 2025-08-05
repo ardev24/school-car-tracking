@@ -35,10 +35,20 @@ function Tracker() {
 
 
     const handleError = (error) => {
-      // Handle the timeout error gracefully
-      let errorMessage = `Error: ${error.message}`;
-      if (error.code === error.TIMEOUT) {
-        errorMessage = "Searching for GPS signal... (Temporary Timeout)";
+      let errorMessage;
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = "Error: Location permission denied. Please check browser and system settings.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = "Error: Location information is unavailable. Check GPS signal.";
+          break;
+        case error.TIMEOUT:
+          errorMessage = "Searching for GPS signal... (Temporary Timeout)";
+          break;
+        default:
+          errorMessage = `An unknown error occurred: ${error.message}`;
+          break;
       }
       setStatus(errorMessage);
       console.error(error);
