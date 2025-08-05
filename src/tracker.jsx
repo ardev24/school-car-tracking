@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// Import our new service functions
 import { addLocationToQueue, processQueue } from './offlineService';
 
 
@@ -7,15 +6,19 @@ function Tracker() {
   const vehicleId = localStorage.getItem('vehicleId');
   const [isTracking, setIsTracking] = useState(false);
   const [status, setStatus] = useState('Idle');
-  
+  const [lastGoodAccuracy, setLastGoodAccuracy] = useState(null);
+
+
   const watchIdRef = useRef(null);
   const tripIdRef = useRef(null);
 
 
-  // Effect for location tracking
   useEffect(() => {
     const handleSuccess = (position) => {
-      setStatus(`Tracking... Accuracy: ${position.coords.accuracy.toFixed(2)}m`);
+      // We got a good location, update the status and accuracy
+      const accuracy = position.coords.accuracy.toFixed(2);
+      setStatus(`Tracking...`);
+      setLastGoodAccuracy(accuracy);
       
       const newLocation = {
         vehicleId: vehicleId,
@@ -27,13 +30,17 @@ function Tracker() {
       };
 
 
-      // USE OUR NEW FUNCTION
       addLocationToQueue(newLocation);
     };
 
 
     const handleError = (error) => {
-      setStatus(`Error: ${error.message}`);
+      // Handle the timeout error gracefully
+      let errorMessage = `Error: ${error.message}`;
+      if (error.code === error.TIMEOUT) {
+        errorMessage = "Searching for GPS signal... (Temporary Timeout)";
+      }
+      setStatus(errorMessage);
       console.error(error);
     };
 
@@ -43,10 +50,11 @@ function Tracker() {
       tripIdRef.current = `trip_${Date.now()}`;
 
 
+      // --- NEW ROBUST OPTIONS ---
       const options = {
         enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 27000
+        timeout: 60000,         // Increased timeout: 60 seconds
+        maximumAge: 10000         // Increased maximumAge: 10 seconds
       };
 
 
@@ -58,24 +66,17 @@ function Tracker() {
       if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         setStatus('Stopped.');
+        setLastGoodAccuracy(null);
       }
     };
-  }, [isTracking]);
+  }, [isTracking, vehicleId]); // Added vehicleId to dependency array
 
 
-  // NEW EFFECT: This hook runs the queue processor on a timer
   useEffect(() => {
-    // Run processQueue immediately on load, in case there are leftover items
-    processQueue(); 
-
-
-    // Then, set up an interval to run it every 30 seconds
+    processQueue();
     const intervalId = setInterval(processQueue, 30000);
-
-
-    // Cleanup: clear the interval when the component is unmounted
     return () => clearInterval(intervalId);
-  }, []); // The empty array [] means this effect runs only once on component mount
+  }, []);
 
 
   const handleReset = () => {
@@ -91,11 +92,11 @@ function Tracker() {
 
 
   return (
-    // JSX remains exactly the same...
     <div>
-      <h1>SMIG School Vehicle</h1>
-      <h2>Active User : {vehicleId}</h2>
-      <p>Status: {status}</p>
+      <h1>Continuous Tracker</h1>
+      <h2>Tracking for: {vehicleId}</h2>
+      {/* Display the accuracy of the last good signal */}
+      <p>Status: {status} {lastGoodAccuracy && `(Accuracy: ${lastGoodAccuracy}m)`}</p>
 
 
       {!isTracking ? (
