@@ -21,7 +21,17 @@ function Tracker() {
   const tripIdRef  = useRef(null);
   const watchRef   = useRef(null);
   const pollRef    = useRef(null);
-  const wakeRef    = useRef(null);
+  const wakeRef    = useRef(null);  
+
+  const base = { padding:'18px 28px', fontSize:'20px', margin:'15px', color:'#fff', border:0 };
+
+  const btnBlue  = { ...base, background:'#1976d2' };          // Drop-off
+  const btnGreen = { ...base, background:'#2e7d32' };          // Start Trip
+  const btnRed   = {                                           // Stop Trip
+    ...base,
+    background:'#c62828',
+    marginTop: '52px',       // <<---- extra vertical space
+  }
 
   /* ───────────────── Wake-lock ───────────────── */
   const lockScreen = async () => {
@@ -151,7 +161,7 @@ function Tracker() {
   /* ────────────────── UI ────────────────── */
   return (
     <div style={{padding:'1rem',fontFamily:'sans-serif'}}>
-      <h2>📍 School-Bus Tracker</h2>
+      <h2>📍 SMI CAR POOL</h2>
       <p>Vehicle: <b>{vehicleId}</b></p>
       <p>Status: {status} {accuracy && `(±${accuracy} m)`}</p>
 
@@ -164,7 +174,7 @@ function Tracker() {
             style={btnBlue}
             disabled={dropBusy}
           >
-            🛑 Drop-off
+            🛑 STUDENT Drop-off
           </button>
           <button onClick={stopTrip} style={btnRed}>Stop Trip</button>
         </>
