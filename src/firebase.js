@@ -16,4 +16,3 @@ const app = initializeApp(firebaseConfig);
 
 
 export const db = getFirestore(app);
-console.log("db oject in firebase is" , db) ;
