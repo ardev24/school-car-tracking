@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { addLocationToQueue, processQueue } from './offlineService';
+import useWakeLock from './useWakeLock';
 
 /* ── CONFIG ─────────────────────────────────────────── */
 const POLL_MS = 5_000;  // background point every 5 s
@@ -22,6 +23,7 @@ function Tracker() {
   const watchRef   = useRef(null);
   const pollRef    = useRef(null);
   const wakeRef    = useRef(null);  
+  useWakeLock(isTracking);
 
   const base = { padding:'18px 28px', fontSize:'20px', margin:'15px', color:'#fff', border:0 };
 
